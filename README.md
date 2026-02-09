@@ -5,6 +5,7 @@ Alexander Giacoio
 ## Vison
 The Software Deployment Registry is a backend service designed to track and record software deployment events across different environments such as development, staging, and production. The system will serve as a centralized source for determining what version of an application is deployed, where it is deployed, and the status of each deployment.
 
+```
 Client / CI Pipeline
         |
         | HTTP (REST API)
