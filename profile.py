@@ -1,22 +1,15 @@
 import geni.portal as portal
-import geni.rspec.pg as pg
-import geni.rspec.igext as IG
+import geni.rspec.pg as rspec
 
-pc = portal.Context()
-request = pc.makeRequestRSpec()
+request = portal.context.makeRequestRSpec()
 
-tourDescription = """
-This profile provides a compute node with Docker installed on Ubuntu.
-"""
+node = request.RawPC("docker-node")
 
-tour = IG.Tour()
-tour.Description(IG.Tour.TEXT, tourDescription)
-request.addTour(tour)
-
-node = request.XenVM("docker")
-node.routable_control_ip = "true"
 node.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops:UBUNTU22-64-STD"
 
-node.addService(pg.Execute(shell="sh", command="sudo bash /local/repository/install_docker.sh"))
+node.addService(rspec.Execute(shell="/bin/sh", command="sudo apt update && sudo apt install -y docker.io"))
+node.addService(rspec.Execute(shell="/bin/sh", command="sudo systemctl start docker"))
+node.addService(rspec.Execute(shell="/bin/sh", command="sudo systemctl enable docker"))
+node.addService(rspec.Execute(shell="/bin/sh", command="sudo usermod -aG docker ubuntu"))
 
-pc.printRequestRSpec(request)
+portal.context.printRequestRSpec()
