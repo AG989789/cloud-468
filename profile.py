@@ -5,26 +5,19 @@ import geni.rspec.igext as IG
 pc = portal.Context()
 request = pc.makeRequestRSpec()
 
-tourDescription = \
-"""
-This profile provides the template for a compute node with Docker installed on Ubuntu 18.04
+tourDescription = """
+This profile provides a compute node with Docker installed on Ubuntu.
 """
 
-#
-# Setup the Tour info with the above description and instructions.
-#  
 tour = IG.Tour()
-tour.Description(IG.Tour.TEXT,tourDescription)
+tour.Description(IG.Tour.TEXT, tourDescription)
 request.addTour(tour)
 
 node = request.XenVM("docker")
-node.routable_control_ip = "true" 
-
-bs_landing = node.Blockstore("bs_image", "/image")
-bs_landing.size = "500GB"
-  
-node.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops:UBUNTU22-64-STD"
+node.hardware_type = "pcvm"
 node.routable_control_ip = "true"
+node.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops:UBUNTU22-64-STD"
+
 node.addService(pg.Execute(shell="sh", command="sudo bash /local/repository/install_docker.sh"))
-  
+
 pc.printRequestRSpec(request)
