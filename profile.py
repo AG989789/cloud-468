@@ -14,7 +14,6 @@ tour.Description(IG.Tour.TEXT, tourDescription)
 request.addTour(tour)
 
 node = request.XenVM("docker")
-node.hardware_type = "pcvm"
 node.routable_control_ip = "true"
 node.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops:UBUNTU22-64-STD"
 
