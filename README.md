@@ -2,7 +2,7 @@
 Alexander Giacoio
 
 
-## Vison
+## Vision
 The Software Deployment Registry is a backend service designed to track and record software deployment events across different environments such as development, staging, and production. The system will serve as a centralized source for determining what version of an application is deployed, where it is deployed, and the status of each deployment.
 
 ```
@@ -86,7 +86,7 @@ The application will connect to PostgreSQL using the following JDBC URL:
 
 In the JDBC URL, `db` is the PostgreSQL service name, `5432` is the PostgreSQL container’s port, and `deployment_registry` is the database name.
 
-### Endpoints (currently)
+### API Endpoints
 - `GET /`
   - Returns a simple message confirming the Software Deployment Registry is running
 - `GET /health`
