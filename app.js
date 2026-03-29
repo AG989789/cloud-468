@@ -1,13 +1,19 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-
-const sharkController = require('./controllers/sharks');
+const path = require('path');
 
 const app = express();
 
+require('./db');
+
+const sharkController = require('./controllers/sharks');
+
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('/', sharkController.getSharks);
+app.use(express.static(path.join(__dirname, 'views')));
+
+app.get('/', sharkController.index);
+app.get('/sharks', sharkController.getSharks);
 app.post('/sharks', sharkController.addShark);
 
 app.listen(3000, () => {
