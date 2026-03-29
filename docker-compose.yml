@@ -1,0 +1,37 @@
+services:
+  app:
+    build: .
+    container_name: deployment-registry-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/deployment_registry
+      SPRING_DATASOURCE_USERNAME: registry_user
+      SPRING_DATASOURCE_PASSWORD: registry_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    networks:
+      - registry-net
+
+  db:
+    image: postgres:16-alpine
+    container_name: deployment-registry-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: deployment_registry
+      POSTGRES_USER: registry_user
+      POSTGRES_PASSWORD: registry_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - registry-net
+
+volumes:
+  postgres_data:
+
+networks:
+  registry-net:
+    driver: bridge
