@@ -1,5 +1,12 @@
 const Shark = require('../models/sharks');
 
+exports.index = (req, res) => {
+  res.send(`
+    <h1>Shark App - Alex Giacoio</h1>
+    <a href="/sharks">View Sharks</a>
+  `);
+};
+
 exports.getSharks = async (req, res) => {
   const sharks = await Shark.find();
 
@@ -17,5 +24,5 @@ exports.getSharks = async (req, res) => {
 
 exports.addShark = async (req, res) => {
   await Shark.create({ name: req.body.name });
-  res.redirect('/');
+  res.redirect('/sharks');
 };
