@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Shark Info</title>
+</head>
+<body>
+
+  <h1>Shark Info - Alex Giacoio</h1>
+
+  <form method="POST" action="/add">
+    <input type="text" name="name" placeholder="Enter shark name" required />
+    <button type="submit">Add Shark</button>
+  </form>
+
+  <h2>Shark List</h2>
+
+  <% sharks.forEach(function(shark) { %>
+    <p><%= shark.name %></p>
+  <% }); %>
+
+</body>
+</html>
