@@ -1,8 +1,7 @@
-const mongoose = require('mongoose');
+const mongoose = require('../db');
 
-mongoose.connect('mongodb://mongo:27017/sharks', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
+const sharkSchema = new mongoose.Schema({
+  name: String
 });
 
-module.exports = mongoose;
+module.exports = mongoose.model('Shark', sharkSchema);
