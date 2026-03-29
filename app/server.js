@@ -1,24 +1,28 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const path = require('path');
 
 const app = express();
 
+// Middleware
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// MongoDB connection (IMPORTANT: use "mongo")
 mongoose.connect('mongodb://mongo:27017/sharks', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
 
-const Shark = mongoose.model('Shark', { name: String });
+// View engine setup
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
-app.get('/', async (req, res) => {
-  const sharks = await Shark.find();
+// Routes
+const indexRoutes = require('./routes/index');
+app.use('/', indexRoutes);
 
-  res.send(`
-    <h1>Shark Info - Alex Giacoio</h1>
-    ${sharks.map(s => `<p>${s.name}</p>`).join('')}
-  `);
-});
-
+// Start server
 app.listen(3000, () => {
   console.log('Server running on port 3000');
 });
