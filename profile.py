@@ -7,8 +7,8 @@ node = request.RawPC("docker-node")
 node.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops:UBUNTU22-64-STD"
 
 node.addService(rspec.Execute(
-    shell="sh",
-    command="cd /local/repository && echo profile-started > profile-ran-2.txt && chmod +x startup.sh && sh startup.sh > startup-run.log 2>&1"
+    shell="/bin/bash",
+    command="cd /local/repository && echo profile-started > profile-ran-2.txt && sed -i 's/\r$//' startup.sh && chmod +x startup.sh && /bin/bash /local/repository/startup.sh"
 ))
 
 portal.context.printRequestRSpec()
