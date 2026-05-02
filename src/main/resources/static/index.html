@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Deployment Registry</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f4f4f4;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .tabs {
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            padding: 10px 16px;
+            margin-right: 10px;
+            border: none;
+            background: #333;
+            color: white;
+            cursor: pointer;
+        }
+
+        .tab-button:hover {
+            background: #555;
+        }
+
+        .section {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #eee;
+        }
+
+        input {
+            padding: 8px;
+            margin: 5px 10px 5px 0;
+            width: 180px;
+        }
+
+        button.action {
+            padding: 8px 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Software Deployment Registry</h1>
+
+    <div class="tabs">
+        <button class="tab-button" onclick="showSection('registrySection')">Registry</button>
+        <button class="tab-button" onclick="showSection('systemSection')">Current System</button>
+    </div>
+
+    <div id="registrySection" class="section active">
+        <h2>Registry Records</h2>
+
+        <div>
+            <input id="applicationName" placeholder="Application Name">
+            <input id="version" placeholder="Version">
+            <input id="environment" placeholder="Environment">
+            <input id="status" placeholder="Status">
+            <input id="scanTarget" placeholder="Scan Target (e.g. google-chrome)">
+            <button class="action" onclick="addDeployment()">Add Record</button>
+            <button class="action" onclick="loadDeployments()">Refresh Records</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Application</th>
+                    <th>Version</th>
+                    <th>Environment</th>
+                    <th>Status</th>
+                    <th>Scan Target</th>
+                </tr>
+            </thead>
+            <tbody id="deploymentsTableBody"></tbody>
+        </table>
+    </div>
+
+    <div id="systemSection" class="section">
+        <h2>Current System Scan</h2>
+        <button class="action" onclick="loadScanResults()">Run Scan</button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Application</th>
+                    <th>Scan Target</th>
+                    <th>Installed</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody id="scanTableBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        async function loadDeployments() {
+            const response = await fetch('/api/deployments');
+            const data = await response.json();
+
+            const tableBody = document.getElementById('deploymentsTableBody');
+            tableBody.innerHTML = '';
+
+            data.forEach(record => {
+                const row = `
+                    <tr>
+                        <td>${record.id ?? ''}</td>
+                        <td>${record.applicationName ?? ''}</td>
+                        <td>${record.version ?? ''}</td>
+                        <td>${record.environment ?? ''}</td>
+                        <td>${record.status ?? ''}</td>
+                        <td>${record.scanTarget ?? ''}</td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        async function addDeployment() {
+            const record = {
+                applicationName: document.getElementById('applicationName').value,
+                version: document.getElementById('version').value,
+                environment: document.getElementById('environment').value,
+                status: document.getElementById('status').value,
+                scanTarget: document.getElementById('scanTarget').value
+            };
+
+            await fetch('/api/deployments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(record)
+            });
+
+            loadDeployments();
+        }
+
+        async function loadScanResults() {
+            const response = await fetch('/api/scan');
+            const data = await response.json();
+
+            const tableBody = document.getElementById('scanTableBody');
+            tableBody.innerHTML = '';
+
+            data.forEach(result => {
+                const row = `
+                    <tr>
+                        <td>${result.applicationName ?? ''}</td>
+                        <td>${result.scanTarget ?? ''}</td>
+                        <td>${result.installed ? 'Yes' : 'No'}</td>
+                        <td>${result.details ?? ''}</td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        loadDeployments();
+    </script>
+</body>
+</html>
