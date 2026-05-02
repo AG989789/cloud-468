@@ -1,7 +1,5 @@
-#!/bin/bash
+#!/bin/sh
 set -e
-
-exec > /tmp/cloud-468-startup.log 2>&1
 
 echo "startup script began"
 date
