@@ -1,5 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 set -e
+
+exec > /local/repository/startup-run.log 2>&1
 
 echo "startup script began"
 date
