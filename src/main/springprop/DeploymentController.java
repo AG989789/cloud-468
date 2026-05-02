@@ -5,13 +5,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 public class DeploymentController {
 
-    private final List<DeploymentRecord> deployments = new ArrayList<>();
+    private final DeploymentRepository deploymentRepository;
+
+    public DeploymentController(DeploymentRepository deploymentRepository) {
+        this.deploymentRepository = deploymentRepository;
+    }
 
     @GetMapping("/")
     public String home() {
@@ -25,12 +28,11 @@ public class DeploymentController {
 
     @GetMapping("/deployments")
     public List<DeploymentRecord> getDeployments() {
-        return deployments;
+        return deploymentRepository.findAll();
     }
 
     @PostMapping("/deployments")
     public DeploymentRecord addDeployment(@RequestBody DeploymentRecord record) {
-        deployments.add(record);
-        return record;
+        return deploymentRepository.save(record);
     }
 }
