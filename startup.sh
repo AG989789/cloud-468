@@ -7,27 +7,30 @@ echo "startup script began"
 date
 whoami
 pwd
-echo "HOME is $HOME"
 
 sudo apt-get update
-sudo apt-get install -y git
+sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common tmux sudo apt gnupg2 pass
 
-cd "$HOME"
-
-echo "current directory after cd:"
-pwd
-ls || true
-
-if [ ! -d "cloud-468" ]; then
-  echo "cloning repo"
-  git clone https://github.com/AG989789/cloud-468.git
-else
-  echo "repo already exists, pulling latest"
-  cd cloud-468
-  git pull
-  cd ..
+if ! command -v docker >/dev/null 2>&1; then
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  sudo apt-get update
+  sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 fi
 
-echo "final directory contents:"
-ls
+sudo apt-get install -y httping jq
+
+if ! command -v docker-compose >/dev/null 2>&1; then
+  sudo curl -L https://github.com/docker/compose/releases/download/v2.32.4/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+  sudo chmod +x /usr/local/bin/docker-compose
+fi
+
+sudo systemctl start docker
+sudo systemctl enable docker
+
+cd /local/repository
+
+sudo docker-compose down || true
+sudo docker-compose up --build -d
+
 echo "startup script finished"
