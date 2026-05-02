@@ -16,15 +16,17 @@ public class DeploymentRecord {
     private String version;
     private String environment;
     private String status;
+    private String scanTarget;
 
     public DeploymentRecord() {
     }
 
-    public DeploymentRecord(String applicationName, String version, String environment, String status) {
+    public DeploymentRecord(String applicationName, String version, String environment, String status, String scanTarget) {
         this.applicationName = applicationName;
         this.version = version;
         this.environment = environment;
         this.status = status;
+        this.scanTarget = scanTarget;
     }
 
     public Long getId() {
@@ -65,5 +67,13 @@ public class DeploymentRecord {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getScanTarget() {
+        return scanTarget;
+    }
+
+    public void setScanTarget(String scanTarget) {
+        this.scanTarget = scanTarget;
     }
 }
