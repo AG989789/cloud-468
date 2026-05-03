@@ -1,20 +1,78 @@
 package springprop;
 
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class SystemScanService {
+
+    private final Map<String, String[]> allowedCommands = new HashMap<>();
+
+    @PostConstruct
+    public void loadApprovedScanTargets() {
+        try {
+            ClassPathResource resource = new ClassPathResource("approved-scan-targets.csv");
+
+            if (!resource.exists()) {
+                System.out.println("approved-scan-targets.csv not found. No scan targets loaded.");
+                return;
+            }
+
+            try (InputStream inputStream = resource.getInputStream();
+                 BufferedReader reader = new BufferedReader(
+                         new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+
+                String line;
+                boolean isHeader = true;
+
+                while ((line = reader.readLine()) != null) {
+                    if (line.isBlank()) {
+                        continue;
+                    }
+
+                    if (isHeader) {
+                        isHeader = false;
+                        continue;
+                    }
+
+                    String[] parts = line.split(",", -1);
+
+                    if (parts.length < 3) {
+                        System.out.println("Skipping invalid scan target line: " + line);
+                        continue;
+                    }
+
+                    String scanTarget = parts[0].trim().toLowerCase();
+                    String command = parts[1].trim();
+                    String argument = parts[2].trim();
+
+                    allowedCommands.put(scanTarget, new String[]{command, argument});
+                }
+            }
+
+            System.out.println("Loaded approved scan targets: " + allowedCommands.keySet());
+
+        } catch (Exception e) {
+            System.out.println("Error loading approved scan targets: " + e.getMessage());
+        }
+    }
 
     public List<SystemScanResult> scanDeployments(List<DeploymentRecord> records) {
         List<SystemScanResult> results = new ArrayList<>();
 
         for (DeploymentRecord record : records) {
             String scanTarget = record.getScanTarget();
+
             if (scanTarget == null || scanTarget.isBlank()) {
                 results.add(new SystemScanResult(
                         record.getApplicationName(),
@@ -39,7 +97,7 @@ public class SystemScanService {
                     applicationName,
                     scanTarget,
                     false,
-                    "Scan target not allowed"
+                    "Scan target not approved"
             );
         }
 
@@ -54,6 +112,7 @@ public class SystemScanService {
 
             StringBuilder output = new StringBuilder();
             String line;
+
             while ((line = reader.readLine()) != null) {
                 output.append(line).append(" ");
             }
@@ -63,7 +122,9 @@ public class SystemScanService {
 
             String details = output.toString().trim();
             if (details.isBlank()) {
-                details = installed ? "Detected" : "Not detected";
+                details = installed
+                        ? "Detected in current runtime environment"
+                        : "Not detected in current runtime environment";
             }
 
             return new SystemScanResult(applicationName, scanTarget, installed, details);
@@ -73,22 +134,16 @@ public class SystemScanService {
                     applicationName,
                     scanTarget,
                     false,
-                    "Error running scan"
+                    "Command not found in current runtime environment"
             );
         }
     }
 
     private String[] getAllowedCommand(String scanTarget) {
-        return switch (scanTarget.toLowerCase()) {
-            case "google-chrome" -> new String[]{"google-chrome", "--version"};
-            case "google-chrome-stable" -> new String[]{"google-chrome-stable", "--version"};
-            case "chromium" -> new String[]{"chromium", "--version"};
-            case "java" -> new String[]{"java", "--version"};
-            case "python3" -> new String[]{"python3", "--version"};
-            case "git" -> new String[]{"git", "--version"};
-            case "node" -> new String[]{"node", "--version"};
-            case "psql" -> new String[]{"psql", "--version"};
-            default -> null;
-        };
+        if (scanTarget == null) {
+            return null;
+        }
+
+        return allowedCommands.get(scanTarget.toLowerCase());
     }
 }
