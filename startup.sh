@@ -4,19 +4,10 @@ set -e
 exec > /local/repository/startup-run.log 2>&1
 
 LOGIN_NOTICE_FILE="/etc/profile.d/cloud468-status.sh"
-FINISH_MARKER="FINISHED: Software Deployment Registry is built and running"
 
 sudo tee "$LOGIN_NOTICE_FILE" >/dev/null <<'EOF'
 #!/bin/bash
 HOST_FQDN=$(hostname -f 2>/dev/null || hostname)
-
-echo "Project directory: /local/repository"
-echo "App URL: http://$HOST_FQDN:8080/  (or use SSH tunnel to localhost:8080)"
-echo "Useful commands:"
-echo "  cd /local/repository"
-echo "  sudo docker-compose ps"
-echo "  tail -f /local/repository/startup-run.log"
-echo
 
 if [ -f /local/repository/startup-run.log ]; then
   if grep -q "FINISHED: Software Deployment Registry is built and running" /local/repository/startup-run.log; then
@@ -105,7 +96,15 @@ sudo docker-compose up --build -d
 echo "[7/7] Application build and launch complete"
 echo
 
+HOST_FQDN=$(hostname -f 2>/dev/null || hostname)
+
 echo "=========================================="
-echo "$FINISH_MARKER"
+echo "FINISHED: Software Deployment Registry is built and running"
 echo "Use 'sudo docker-compose ps' to verify containers"
+echo "Project directory: /local/repository"
+echo "App URL: http://$HOST_FQDN:8080/  (or use SSH tunnel to localhost:8080)"
+echo "Useful commands:"
+echo "  cd /local/repository"
+echo "  sudo docker-compose ps"
+echo "  tail -f /local/repository/startup-run.log"
 echo "=========================================="
