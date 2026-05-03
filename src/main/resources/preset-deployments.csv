@@ -1,0 +1,4 @@
+applicationName,version,environment,status,scanTarget
+Java,17,current-system,expected,java
+Python 3,3.x,current-system,expected,python3
+Git,latest,current-system,expected,git
