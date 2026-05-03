@@ -4,9 +4,28 @@ set -e
 exec > /local/repository/startup-run.log 2>&1
 
 STATUS_FILE="/local/repository/startup-status.txt"
-BASHRC_LINE='if [ -f /local/repository/startup-status.txt ]; then cat /local/repository/startup-status.txt; fi'
+BASHRC_BLOCK_START="# CLOUD468_STATUS_START"
+BASHRC_BLOCK_END="# CLOUD468_STATUS_END"
 
-grep -qxF "$BASHRC_LINE" /users/agiacoio/.bashrc || echo "$BASHRC_LINE" >> /users/agiacoio/.bashrc
+cat > /tmp/cloud468_bashrc_block <<'EOF'
+# CLOUD468_STATUS_START
+if [ -f /local/repository/startup-status.txt ]; then
+  cat /local/repository/startup-status.txt
+fi
+HOST_FQDN=$(hostname -f 2>/dev/null || hostname)
+echo "Project directory: /local/repository"
+echo "App URL: http://$HOST_FQDN:8080/  (or use SSH tunnel to localhost:8080)"
+echo "Useful commands:"
+echo "  cd /local/repository"
+echo "  sudo docker-compose ps"
+echo "  tail -f /local/repository/startup-run.log"
+# CLOUD468_STATUS_END
+EOF
+
+if [ -f /users/agiacoio/.bashrc ]; then
+  sed -i "/$BASHRC_BLOCK_START/,/$BASHRC_BLOCK_END/d" /users/agiacoio/.bashrc
+fi
+cat /tmp/cloud468_bashrc_block >> /users/agiacoio/.bashrc
 
 cat <<'EOF' | sudo tee "$STATUS_FILE" >/dev/null
 ==========================================
