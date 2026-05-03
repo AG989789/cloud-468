@@ -87,14 +87,14 @@ The application will connect to PostgreSQL using the following JDBC URL:
 In the JDBC URL, `db` is the PostgreSQL service name, `5432` is the PostgreSQL container’s port, and `deployment_registry` is the database name.
 
 ### API Endpoints
-- `GET /`
-  - Returns a simple message confirming the Software Deployment Registry is running
-- `GET /health`
+- `GET /api/health`
   - Returns a simple health-check response
-- `GET /deployments`
-  - Returns the current in-memory list of deployment records
-- `POST /deployments`
-  - Accepts a deployment record JSON object and stores it in memory for the current runtime session
+- `GET /api/deployments`
+  - Returns deployment records stored in PostgreSQL
+- `POST /api/deployments`
+  - Stores a deployment record in PostgreSQL
+- `GET /api/scan`
+  - Scans the current backend runtime environment for approved application targets stored in deployment records
 
 ## Example Deployment Record JSON
 
@@ -103,5 +103,137 @@ In the JDBC URL, `db` is the PostgreSQL service name, `5432` is the PostgreSQL c
   "applicationName": "my-app",
   "version": "1.0.0",
   "environment": "production",
-  "status": "deployed"
+  "status": "expected",
+  "scanTarget": "java"
 }
+```
+
+
+## Final Implementation
+
+The final implementation extends the original two-container design into a working deployment registry with a browser-based interface, persistent storage, preset record loading, and runtime environment scanning.
+
+The system now includes:
+- A Spring Boot backend running in a Docker container
+- A PostgreSQL database running in a separate Docker container
+- A static frontend page served by Spring Boot
+- Persistent deployment records stored in PostgreSQL
+- Automatic CloudLab startup using `profile.py` and `startup.sh`
+- Preset deployment record loading from a CSV file at application startup
+- A configurable approved scan-target list loaded from a CSV file
+
+## Current User Interface
+
+The application serves a web page at the root path `/`. This page contains two main views:
+
+### Registry
+The Registry view allows the user to:
+- View deployment records currently stored in PostgreSQL
+- Add a new deployment record from the browser
+- Store the fields application name, version, environment, status, and scan target
+
+### Current System
+The Current System view allows the user to:
+- Trigger a scan of the current backend runtime environment
+- Compare stored registry entries against approved scan targets
+- Display whether a target application was found and show command output when available
+
+## Final API Behavior
+
+The final backend no longer stores deployment records in memory. Instead, records are persisted in PostgreSQL through Spring Data JPA.
+
+### Final API Endpoints
+- `GET /api/health`
+  - Returns `OK` when the backend is running
+- `GET /api/deployments`
+  - Returns all stored deployment records from PostgreSQL
+- `POST /api/deployments`
+  - Inserts a new deployment record into PostgreSQL
+- `GET /api/scan`
+  - Reads stored deployment records and checks their scan targets against the approved command list
+
+## Preset Deployment Loading
+
+The project supports preset deployment records through a CSV file:
+
+`src/main/resources/preset-deployments.csv`
+
+This file allows the user to create deployment data before the launch. On application launch, the backend reads the CSV file and creates the deployment data if they don't exist in PostgreSQL.
+
+This feature helps the application to have some demo data or even anticipated application data without having to manually enter the data through the UI after the launch.
+
+## Approved Scan Target Configuration
+
+The project uses a separate CSV file to define which scan targets are security-approved:
+
+`src/main/resources/approved-scan-targets.csv`
+
+This file links an authorized scan target with the command used to authenticate the application. This ensures that the system scan code cannot execute any arbitrary commands by allowing only pre-authorized scan targets to run.
+
+The scan results of a deployment record with a scan target not included in the authorized scan targets file will show the target as unauthorized.
+
+## CloudLab Deployment Process
+
+The CloudLab profile automatically launches the project through two files:
+
+- `profile.py`
+- `startup.sh`
+
+### profile.py
+The CloudLab profile uses our standard `profile.py` to launch the node plusan addition line to execute the startup.sh script stored in `/local/repository`.
+
+### startup.sh
+The startup script performs the following tasks automatically:
+- Normalizes the startup script file for Linux execution
+- Installs Docker if it is missing
+- Installs standalone `docker-compose` if it is missing
+- Starts and enables the Docker service
+- Builds and launches the project with `docker-compose up --build -d`
+- Writes a startup log so build progress can be reviewed after login
+
+This means the user does not need to manually install Docker or manually build the application after the CloudLab node starts.
+
+## Startup Logs
+
+Startup progress is written to:
+
+`/local/repository/startup-run.log`
+
+This log records:
+- when automatic setup begins
+- package installation progress
+- Docker setup progress
+- application build progress
+- final completion of container launch
+
+This file can be viewed with:
+
+```bash
+tail -f /local/repository/startup-run.log
+```
+
+## Website Access
+
+Once the containers are running, the web application can be accessed in one of two ways.
+
+### Direct URL
+If the CloudLab node allows browser access on port 8080. The current link for this is provided in the terminal at launch:
+
+`http://<node-hostname>:8080/`
+
+### SSH Tunnel
+If direct access does not work, the application can be viewed from a local machine by creating an SSH tunnel:
+
+```bash
+ssh -L 8080:localhost:8080 (YOUR LOGIN HERE)@<node-hostname>
+```
+
+After the tunnel is established, open:
+
+`http://localhost:8080/`
+
+## Runtime Environment Note
+
+The Current System scan shows the available software for the backend runtime environment. As the backend is run inside the Docker container, the output from the scan shows software installed in the application container environment rather than on the whole host operating system running inside the virtual machine.
+
+This means that different containers running on the same virtual machine will have different outputs in terms of installed software in the respective containers.
