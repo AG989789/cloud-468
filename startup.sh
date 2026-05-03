@@ -110,6 +110,6 @@ echo "Website access with GUI:"
 echo "  Direct URL: http://$HOST_FQDN:8080/"
 echo "  If direct access does not work, use an SSH tunnel from your local machine:"
 echo "    ssh -L 8080:localhost:8080 (YOUR CLOUD LOGIN)@$HOST_FQDN"
-echo "    Example : ssh -L 8080:localhost:8080 agiacoio@clnode002.clemson.cloudlab.us
+echo "    Example : ssh -L 8080:localhost:8080 agiacoio@clnode002.clemson.cloudlab.us"
 echo "  Then open: http://localhost:8080/"
 echo "=========================================="
