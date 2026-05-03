@@ -100,7 +100,6 @@ HOST_FQDN=$(hostname -f 2>/dev/null || hostname)
 
 echo "=========================================="
 echo "FINISHED: Software Deployment Registry is built and running"
-echo "Use 'sudo docker-compose ps' to verify containers"
 echo "Project directory: /local/repository"
 echo "App URL: http://$HOST_FQDN:8080/  (or use SSH tunnel to localhost:8080)"
 echo "Useful commands:"
