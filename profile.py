@@ -8,7 +8,7 @@ node.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops:UBUNTU22-64-STD"
 
 node.addService(rspec.Execute(
     shell="/bin/bash",
-    command="cd /local/repository && echo profile-started > profile-ran-2.txt && sed -i 's/\r$//' startup.sh && chmod +x startup.sh && /bin/bash /local/repository/startup.sh"
+    command="cd /local/repository && sed -i 's/\r$//' startup.sh && chmod +x startup.sh && /bin/bash /local/repository/startup.sh"
 ))
 
 portal.context.printRequestRSpec()
